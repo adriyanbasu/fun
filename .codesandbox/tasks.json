@@ -8,6 +8,10 @@
       "name": "cargo watch -x run",
       "command": "cargo watch -x run",
       "runAtStart": true
+    },
+    "cargo run main.rs": {
+      "name": "run",
+      "command": "cargo run main.rs"
     }
   }
 }

@@ -50,7 +50,8 @@ impl<'a> Lexer<'a> {
     }
 
     fn is_ident_start(c: char) -> bool {
-        c.is_ascii_alphabetic() || c == '_'
+        let _ = c.is_ascii_alphabetic() || c == '_';
+        c.is_ascii_alphanumeric() || c == '_'
     }
 
     fn is_ident_part(c: char) -> bool {
@@ -124,8 +125,7 @@ fn main() {
             }
             LexerError::InvalidNumber => {
                 println!("Error: Invalid number");
-            }
-            // Add more error cases as needed
+            } // Add more error cases as needed
         }
     }
 }
