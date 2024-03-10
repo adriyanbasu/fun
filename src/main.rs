@@ -16,6 +16,7 @@ pub enum Token {
     LParen,
     RParen,
     EndOfFile,
+    Underscore,
 }
 
 // AST Node Definition
@@ -91,57 +92,59 @@ impl<'a> Lexer<'a> {
         while self.position < self.input.len() {
             self.consume_whitespace();
 
-            if let Some(c) = self.input[self.position..].chars().next() {
-                match c {
-                    '0'..='9' => {
-                        let number_str = self.consume_while(|c| c.is_digit(10));
-                        let number = number_str.parse::<i64>().unwrap();
-                        tokens.push(Token::Number(number));
+            let Some(c) = self.input[self.position..].chars().next() else {
+                continue;
+            };
+            match c {
+                '0'..='9' => {
+                    let number_str = self.consume_while(|c| c.is_digit(10));
+                    let number = number_str.parse::<i64>().unwrap();
+                    tokens.push(Token::Number(number));
+                }
+                '+' => {
+                    tokens.push(Token::Plus);
+                    self.position += c.len_utf8();
+                }
+                '-' => {
+                    tokens.push(Token::Minus);
+                    self.position += c.len_utf8();
+                }
+                '*' => {
+                    tokens.push(Token::Multiply);
+                    self.position += c.len_utf8();
+                }
+                '/' => {
+                    tokens.push(Token::Divide);
+                    self.position += c.len_utf8();
+                }
+                '(' => {
+                    tokens.push(Token::LParen);
+                    self.position += c.len_utf8();
+                }
+                ')' => {
+                    tokens.push(Token::RParen);
+                    self.position += c.len_utf8();
+                }
+                'a'..='z' | 'A'..='Z' => {
+                    let identifier = self.consume_while(|c| c.is_ascii_alphanumeric());
+                    if identifier == "print" {
+                        tokens.push(Token::Print);
+                    } else {
+                        tokens.push(Token::Identifier(identifier));
                     }
-                    '+' => {
-                        tokens.push(Token::Plus);
-                        self.position += c.len_utf8();
-                    }
-                    '-' => {
-                        tokens.push(Token::Minus);
-                        self.position += c.len_utf8();
-                    }
-                    '*' => {
-                        tokens.push(Token::Multiply);
-                        self.position += c.len_utf8();
-                    }
-                    '/' => {
-                        tokens.push(Token::Divide);
-                        self.position += c.len_utf8();
-                    }
-                    '(' => {
-                        tokens.push(Token::LParen);
-                        self.position += c.len_utf8();
-                    }
-                    ')' => {
-                        tokens.push(Token::RParen);
-                        self.position += c.len_utf8();
-                    }
-                    'a'..='z' | 'A'..='Z' => {
-                        let identifier = self.consume_while(|c| c.is_ascii_alphanumeric());
-                        if identifier == "print" {
-                            tokens.push(Token::Print);
-                        } else {
-                            tokens.push(Token::Identifier(identifier));
-                        }
-                    }
-                    '=' => {
-                        tokens.push(Token::Assignment);
-                        self.position += c.len_utf8();
-                    }
-                    ';' => {
-                        tokens.push(Token::Semicolon);
-                        self.position += c.len_utf8();
-                    }
-                    _ => {
-                        // Handle unexpected characters
-                        self.position += c.len_utf8();
-                    }
+                }
+                '=' => {
+                    tokens.push(Token::Assignment);
+                    self.position += c.len_utf8();
+                }
+                ';' => {
+                    tokens.push(Token::Semicolon);
+                    self.position += c.len_utf8();
+                }
+                _ => {
+                    // just ignore
+                    tokens.push(Token::Underscore);
+                    self.position += c.len_utf8();
                 }
             }
         }
@@ -159,10 +162,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Parser {
-            tokens,
-            current: 0,
-        }
+        Parser { tokens, current: 0 }
     }
 
     fn parse_expr(&mut self) -> Expr {
@@ -256,7 +256,7 @@ impl Interpreter {
         Interpreter {
             variables: HashMap::new(),
         }
-   }
+    }
 
     fn eval_expr(&mut self, expr: &Expr) -> i64 {
         match expr {
@@ -307,6 +307,3 @@ fn main() {
         Err(error) => println!("Parsing Error: {}", error),
     }
 }
-
-
- 
