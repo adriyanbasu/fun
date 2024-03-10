@@ -303,6 +303,12 @@ fn main() {
         Ok(statements) => {
             let mut interpreter = Interpreter::new();
             interpreter.execute(statements);
+
+            // Print the final value of x
+            println!(
+                "Final value of x: {}",
+                interpreter.variables.get("x").unwrap()
+            );
         }
         Err(error) => println!("Parsing Error: {}", error),
     }
